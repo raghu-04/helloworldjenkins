@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/YOUR_GITHUB_USERNAME/hello-world-app.git'
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                dir('backend') {
+                    sh 'docker build -t your-dockerhub-username/backend:latest .'
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                dir('frontend') {
+                    sh 'docker build -t your-dockerhub-username/frontend:latest .'
+                }
+            }
+        }
+
+        stage('Push Docker Images') {
+            steps {
+                withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
+                    sh 'docker push your-dockerhub-username/backend:latest'
+                    sh 'docker push your-dockerhub-username/frontend:latest'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'docker-compose up -d'
+            }
+        }
+    }
+}
+
